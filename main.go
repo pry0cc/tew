@@ -1,13 +1,35 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/n0ncetonic/nmapxml"
 	"os"
 )
 
 func main() {
-	input := os.Args[1]
+	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
+	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (TODO)")
+	flag.Parse()
+
+	input := *inputArg
+	dnsx := *dnsxArg
+
+	if input == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	if dnsx != "" {
+		if _, err := os.Stat(dnsx); err != nil {
+			fmt.Printf("dnsx file does not exist\n")
+		}
+	}
+
+	if _, err := os.Stat(input); err != nil {
+		fmt.Printf("File does not exist\n")
+	}
+
 	scanData, _ := nmapxml.Readfile(input)
 	ParseNmap(scanData)
 }
