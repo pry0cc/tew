@@ -27,7 +27,7 @@ Binaries are available for most platforms and archectectures in the [releases pa
 nmap -T4 1.1.1.1 8.8.8.8 -oX file.xml
 
 tew -x file.xml
-tew -x file.xml | tee output.txt
+tew -x file.xml -o output.txt
 tew -x file.xml | httpx -json -o http.json
 ```
 
@@ -47,8 +47,8 @@ tew -x nmap.xml -dnsx dns.json --vhost | httpx -json -o http.json
 - [x] Add Arm64 for Darwin to Build
 - [x] Use proper flags library
 - [x] Add ability to import and use dnsx JSON & text output files - working on it!
-- [ ] Clean up DNSX Parsing module and sort unique
-- [ ] Add output text file as option
+- [x] Clean up DNSX Parsing module and sort unique
+- [x] Add output text file as option
 - [ ] Test on Windows, Linux & Mac for cross-compatibility
 
 # Credit
@@ -56,3 +56,4 @@ tew -x nmap.xml -dnsx dns.json --vhost | httpx -json -o http.json
 - @vay3t - Go Help
 - @BruceEdiger - Go Help
 - @mortensonsam - Go help!!
+- https://www.golangprograms.com - A lot of the code here is copy-pasted from the internet, at the time of writing, my go skills are copy-paste :P And that's ok if it works, right?
