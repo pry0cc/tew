@@ -31,17 +31,26 @@ tew -x file.xml | tee output.txt
 tew -x file.xml | httpx -json -o http.json
 ```
 
-## Future Ideas
+## DNSx Parsing
+If you want to correlate DNSx JSON output, simply generate a JSON file and import it using the following syntax.
 ```
-# Perhaps we could process dnsx output and correlate for vhosts?
-tew -x file.xml --dnsx dnsx.txt | httpx 
+subfinder -d domain.com -o subs.txt
+dnsx -l subs.txt -json -o dns.json
+cat dns.json | jq -r '.a[]' | tee ips.txt
+nmap -T4 -iL ips.txt -oX nmap.xml
+
+tew -x nmap.xml -dnsx dns.json --vhost | httpx | tee http.txt
 ```
 
 # Todo
 - [x] Create auto build using github ci & autobuild
 - [x] Add Arm64 for Darwin to Build
 - [x] Use proper flags library
-- [ ] Add ability to import and use dnsx JSON & text output files - working on it!
+- [x] Add ability to import and use dnsx JSON & text output files - working on it!
+- [ ] Clean up DNSX Parsing module and sort unique
 
 # Credit
 - @hakluke - Thank you man for helping me fix that dumb bug :) 
+- @vay3t - Go Help
+- @BruceEdiger - Go Help
+- @mortensonsam - Go help!!
