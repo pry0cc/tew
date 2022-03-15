@@ -16,6 +16,7 @@ This is useful for internal penetration tests and can be piped to httpx easily. 
 ```
 go install github.com/pry0cc/tew@latest
 ```
+
 ## Binaries
 Binaries are available for most platforms and archectectures. - todo
 
@@ -37,8 +38,9 @@ tew file.xml --dnsx dnsx.txt | httpx
 ```
 
 # Todo
+- [x] Create auto build using github ci & autobuild
+- [x] Add Arm64 for Darwin to Build
 - [ ] Use proper flags library
-- [ ] Create auto build using github ci & autobuild
 - [ ] Add ability to import and use dnsx JSON & text output files
 
 # Credit
