@@ -12,7 +12,7 @@ This is useful for internal penetration tests and can be piped to httpx easily. 
 
 # Installation
 
-## Go install
+## Go install
 ```
 go install github.com/pry0cc/tew@latest
 ```
