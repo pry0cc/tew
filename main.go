@@ -11,22 +11,24 @@ import (
 )
 
 func main() {
+	var vhostRep = flag.Bool("vhost", false, "Use dnsx data to insert vhosts (Optional)")
+	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (Optional)")
 	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
-	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (TODO)")
 	flag.Parse()
 
 	input := *inputArg
 	dnsx := *dnsxArg
+	vhost := *vhostRep
 
 	if input == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	ParseNmap(input, dnsx)
+	ParseNmap(input, dnsx, vhost)
 }
 
-func ParseNmap(input string, dnsx string) {
+func ParseNmap(input string, dnsx string, vhost bool) {
 	var index map[string][]string
 	r, _ := nmapxml.Readfile(input)
 
@@ -50,11 +52,18 @@ func ParseNmap(input string, dnsx string) {
 				if portData.State.State == "open" {
 					portID := portData.PortID
 
-					for _, ipp := range index {
-						fmt.Println(ipp)
-					}
+					if vhost {
+						for _, ipp := range index {
+							domains := ipp
 
-					fmt.Println(ipAddr + ":" + portID)
+							for _, dom := range domains {
+								fmt.Println(dom + ":" + portID)
+							}
+						}
+
+					} else {
+						fmt.Println(ipAddr + ":" + portID)
+					}
 				}
 			}
 		}
@@ -80,8 +89,8 @@ func ParseDnsx(filename string) map[string][]string {
 
 		for _, record := range aRecords {
 			ip = record.(string)
-			data[ip] = append(data[ip], host)
 		}
+		data[ip] = append(data[ip], host)
 	}
 
 	if err := scanner.Err(); err != nil {
