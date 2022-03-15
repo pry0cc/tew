@@ -39,7 +39,7 @@ dnsx -l subs.txt -json -o dns.json
 cat dns.json | jq -r '.a[]' | tee ips.txt
 nmap -T4 -iL ips.txt -oX nmap.xml
 
-tew -x nmap.xml -dnsx dns.json --vhost | httpx | tee http.txt
+tew -x nmap.xml -dnsx dns.json --vhost | httpx -json -o http.json
 ```
 
 # Todo
