@@ -48,6 +48,8 @@ tew -x nmap.xml -dnsx dns.json --vhost | httpx -json -o http.json
 - [x] Use proper flags library
 - [x] Add ability to import and use dnsx JSON & text output files - working on it!
 - [ ] Clean up DNSX Parsing module and sort unique
+- [ ] Add output text file as option
+- [ ] Test on Windows, Linux & Mac for cross-compatibility
 
 # Credit
 - @hakluke - Thank you man for helping me fix that dumb bug :) 
