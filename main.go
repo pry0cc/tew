@@ -8,22 +8,18 @@ import (
 
 func main() {
 	input := os.Args[1]
-	ParseXml(input)
+	scanData, _ := nmapxml.Readfile(input)
+	ParseNmap(scanData)
 }
 
-func ParseXml(xmlFileName string) {
-	scanData, _ := nmapxml.Readfile(xmlFileName)
-	dealWithRun(scanData)
-}
-
-func dealWithRun(r nmapxml.Run) {
-	hostSlice := r.Host
-	for _, host := range hostSlice {
+func ParseNmap(r nmapxml.Run) {
+	hostS := r.Host
+	for _, host := range hostS {
 		ipAddr := host.Address.Addr
 		if host.Ports.Port != nil {
-			for _, portInfo := range *host.Ports.Port {
-				if portInfo.State.State == "open" {
-					portID := portInfo.PortID
+			for _, portData := range *host.Ports.Port {
+				if portData.State.State == "open" {
+					portID := portData.PortID
 					fmt.Println(ipAddr + ":" + portID)
 				}
 			}
