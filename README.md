@@ -39,7 +39,7 @@ tew file.xml --dnsx dnsx.txt | httpx
 
 # Todo
 - [x] Create auto build using github ci & autobuild
-- [ ] Add Arm64 for Darwin to Build
+- [x] Add Arm64 for Darwin to Build
 - [ ] Use proper flags library
 - [ ] Add ability to import and use dnsx JSON & text output files
 
