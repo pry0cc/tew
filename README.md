@@ -19,6 +19,23 @@ go install github.com/pry0cc/tew@latest
 ## Binaries
 Binaries are available for most platforms and archectectures. - todo
 
+# Usage
+```
+# Run Nmap and save to XML output
+
+nmap -T4 1.1.1.1 8.8.8.8 -oX file.xml
+
+tew file.xml
+tew file.xml | tee output.txt
+tew file.xml | httpx -json -o http.json
+```
+
+## Future Ideas
+```
+# Perhaps we could process dnsx output and correlate for vhosts?
+tew file.xml --dnsx dnsx.txt | httpx 
+```
+
 # Todo
 - [ ] Use proper flags library
 - [ ] Create auto build using github ci & autobuild
