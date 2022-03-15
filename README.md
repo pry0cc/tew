@@ -26,22 +26,22 @@ Binaries are available for most platforms and archectectures in the [releases pa
 
 nmap -T4 1.1.1.1 8.8.8.8 -oX file.xml
 
-tew file.xml
-tew file.xml | tee output.txt
-tew file.xml | httpx -json -o http.json
+tew -x file.xml
+tew -x file.xml | tee output.txt
+tew -x file.xml | httpx -json -o http.json
 ```
 
 ## Future Ideas
 ```
 # Perhaps we could process dnsx output and correlate for vhosts?
-tew file.xml --dnsx dnsx.txt | httpx 
+tew -x file.xml --dnsx dnsx.txt | httpx 
 ```
 
 # Todo
 - [x] Create auto build using github ci & autobuild
 - [x] Add Arm64 for Darwin to Build
-- [ ] Use proper flags library
-- [ ] Add ability to import and use dnsx JSON & text output files
+- [x] Use proper flags library
+- [ ] Add ability to import and use dnsx JSON & text output files - working on it!
 
 # Credit
 - @hakluke - Thank you man for helping me fix that dumb bug :) 
