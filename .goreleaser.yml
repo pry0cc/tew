@@ -1,0 +1,15 @@
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+
+- main: .
+  binary: tew
+  id: tew 
+
+  goos: [windows,linux,darwin]
+  goarch: [amd64,arm,arm64]
+  ignore:
+    - goos: windows
+      goarch: arm
