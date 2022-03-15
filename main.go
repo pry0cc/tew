@@ -11,12 +11,14 @@ import (
 )
 
 func main() {
-	var vhostRep = flag.Bool("vhost", false, "Use dnsx data to insert vhosts (Optional)")
-	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (Optional)")
 	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
+	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (Optional)")
+	var vhostRep = flag.Bool("vhost", false, "Use dnsx data to insert vhosts (Optional)")
+	var outputArg = flag.String("o", "", "Output filename (Optional)")
 	flag.Parse()
 
 	input := *inputArg
+	output := *outputArg
 	dnsx := *dnsxArg
 	vhost := *vhostRep
 
@@ -25,11 +27,50 @@ func main() {
 		os.Exit(1)
 	}
 
-	ParseNmap(input, dnsx, vhost)
+	results := ParseNmap(input, dnsx, vhost)
+
+	for _, line := range results {
+		fmt.Println(line)
+	}
+
+	if output != "" {
+		file, err := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+		if err != nil {
+			log.Fatalf("failed creating file: %s", err)
+		}
+
+		datawriter := bufio.NewWriter(file)
+
+		for _, data := range results {
+			_, _ = datawriter.WriteString(data + "\n")
+		}
+
+		datawriter.Flush()
+		file.Close()
+	}
+
 }
 
-func ParseNmap(input string, dnsx string, vhost bool) {
+func Unique(slice []string) []string {
+	// create a map with all the values as key
+	uniqMap := make(map[string]struct{})
+	for _, v := range slice {
+		uniqMap[v] = struct{}{}
+	}
+
+	// turn the map keys into a slice
+	uniqSlice := make([]string, 0, len(uniqMap))
+	for v := range uniqMap {
+		uniqSlice = append(uniqSlice, v)
+	}
+	return uniqSlice
+}
+
+func ParseNmap(input string, dnsx string, vhost bool) []string {
+	/* ParseNmap parses a Nmap XML file */
 	var index map[string][]string
+	var output []string
 	r, _ := nmapxml.Readfile(input)
 
 	if _, err := os.Stat(input); err != nil {
@@ -57,21 +98,28 @@ func ParseNmap(input string, dnsx string, vhost bool) {
 							domains := ipp
 
 							for _, dom := range domains {
-								fmt.Println(dom + ":" + portID)
+								//fmt.Println(dom + ":" + portID)
+								line := dom + ":" + portID
+								output = append(output, line)
 							}
 						}
 
 					} else {
-						fmt.Println(ipAddr + ":" + portID)
+						line := ipAddr + ":" + portID
+						output = append(output, line)
+						//fmt.Println(ipAddr + ":" + portID)
 					}
 				}
 			}
 		}
 	}
+
+	uniq := Unique(output)
+	return uniq
 }
 
 func ParseDnsx(filename string) map[string][]string {
-	/* ParseDnsx parses a DNSX JSON file*/
+	/* ParseDnsx parses a DNSX JSON file */
 	var data = map[string][]string{}
 	file, err := os.Open(filename)
 	if err != nil {
@@ -90,6 +138,7 @@ func ParseDnsx(filename string) map[string][]string {
 		for _, record := range aRecords {
 			ip = record.(string)
 		}
+
 		data[ip] = append(data[ip], host)
 	}
 
