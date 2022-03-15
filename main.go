@@ -132,14 +132,18 @@ func ParseDnsx(filename string) map[string][]string {
 		var result map[string]interface{}
 		json.Unmarshal([]byte(scanner.Text()), &result)
 		host := result["host"].(string)
-		aRecords := result["a"].([]interface{})
-		ip := ""
 
-		for _, record := range aRecords {
-			ip = record.(string)
+		if val, ok := result["a"]; ok {
+			aRecords := val.([]interface{})
+
+			ip := ""
+
+			for _, record := range aRecords {
+				ip = record.(string)
+			}
+
+			data[ip] = append(data[ip], host)
 		}
-
-		data[ip] = append(data[ip], host)
 	}
 
 	if err := scanner.Err(); err != nil {
