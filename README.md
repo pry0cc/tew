@@ -18,7 +18,7 @@ go install github.com/pry0cc/tew@latest
 ```
 
 ## Binaries
-Binaries are available for most platforms and archectectures. - todo
+Binaries are available for most platforms and archectectures in the [releases page](https://github.com/pry0cc/tew/releases/latest).
 
 # Usage
 ```
