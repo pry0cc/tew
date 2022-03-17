@@ -83,9 +83,9 @@ func (p parse) parseNmap(input string, dnsx string, vhost bool) []string {
 	if input != "-" {
 		if _, err := os.Stat(input); err != nil {
 			fmt.Printf("File does not exist\n")
-
-			p.Run, _ = nmapxml.Readfile(input)
 		}
+
+		p.Run, _ = nmapxml.Readfile(input)
 	} else {
 		bytes, _ := ioutil.ReadAll(os.Stdin)
 		xml.Unmarshal(bytes, &p.Run)
