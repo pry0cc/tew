@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/n0ncetonic/nmapxml"
 	"log"
 	"os"
+
+	"github.com/n0ncetonic/nmapxml"
 )
 
 func main() {
@@ -40,14 +41,14 @@ func main() {
 			log.Fatalf("failed creating file: %s", err)
 		}
 
+		defer file.Close()
 		datawriter := bufio.NewWriter(file)
 
 		for _, data := range results {
-			_, _ = datawriter.WriteString(data + "\n")
+			datawriter.WriteString(data + "\n")
 		}
 
 		datawriter.Flush()
-		file.Close()
 	}
 
 }
