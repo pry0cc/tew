@@ -28,7 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	results := ParseNmap(input, dnsx, vhost)
+	results := parseNmap(input, dnsx, vhost)
 
 	for _, line := range results {
 		fmt.Println(line)
@@ -53,7 +53,7 @@ func main() {
 
 }
 
-func Unique(slice []string) []string {
+func unique(slice []string) []string {
 	// create a map with all the values as key
 	uniqMap := make(map[string]struct{})
 	for _, v := range slice {
@@ -68,8 +68,8 @@ func Unique(slice []string) []string {
 	return uniqSlice
 }
 
-func ParseNmap(input string, dnsx string, vhost bool) []string {
-	/* ParseNmap parses a Nmap XML file */
+func parseNmap(input string, dnsx string, vhost bool) []string {
+	/* parseNmap parses a Nmap XML file */
 	var index map[string][]string
 	var output []string
 	r, _ := nmapxml.Readfile(input)
@@ -82,7 +82,7 @@ func ParseNmap(input string, dnsx string, vhost bool) []string {
 		if _, err := os.Stat(dnsx); err != nil {
 			fmt.Printf("dnsx file does not exist\n")
 		} else {
-			index = ParseDnsx(dnsx)
+			index = parseDnsx(dnsx)
 		}
 	}
 
@@ -115,14 +115,15 @@ func ParseNmap(input string, dnsx string, vhost bool) []string {
 		}
 	}
 
-	uniq := Unique(output)
+	uniq := unique(output)
 	return uniq
 }
 
-func ParseDnsx(filename string) map[string][]string {
-	/* ParseDnsx parses a DNSX JSON file */
+func parseDnsx(filename string) map[string][]string {
+	/* parseDnsx parses a DNSX JSON file */
 	var data = map[string][]string{}
 	file, err := os.Open(filename)
+
 	if err != nil {
 		log.Fatal(err)
 	}
