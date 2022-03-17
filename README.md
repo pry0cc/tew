@@ -74,4 +74,5 @@ tew -x nmap.xml -dnsx dns.json --vhost | httpx -json -o http.json
 - @vay3t - Go Help
 - @BruceEdiger - Go Help
 - @mortensonsam - Go help!!
+- @xstp - stdin support
 - https://www.golangprograms.com - A lot of the code here is copy-pasted from the internet, at the time of writing, my go skills are copy-paste :P And that's ok if it works, right?
