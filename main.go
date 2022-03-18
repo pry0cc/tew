@@ -3,14 +3,20 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/n0ncetonic/nmapxml"
 )
+
+type parse struct {
+	nmapxml.Run
+}
 
 func main() {
 	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
@@ -32,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	results := parseNmap(input, dnsx, vhost, urls)
+	results := parse.parseNmap(parse{}, input, dnsx, vhost, urls)
 
 	for _, line := range results {
 		fmt.Println(line)
@@ -72,14 +78,21 @@ func unique(slice []string) []string {
 	return uniqSlice
 }
 
-func parseNmap(input string, dnsx string, vhost bool, urls bool) []string {
+func (p parse) parseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 	/* ParseNmap parses a Nmap XML file */
 	var index map[string][]string
 	var output []string
-	r, _ := nmapxml.Readfile(input)
 
-	if _, err := os.Stat(input); err != nil {
-		fmt.Printf("File does not exist\n")
+	if input != "-" {
+		if _, err := os.Stat(input); err != nil {
+			fmt.Printf("File does not exist\n")
+			os.Exit(1)
+		}
+
+		p.Run, _ = nmapxml.Readfile(input)
+	} else {
+		bytes, _ := ioutil.ReadAll(os.Stdin)
+		xml.Unmarshal(bytes, &p.Run)
 	}
 
 	if dnsx != "" {
@@ -90,8 +103,8 @@ func parseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 		}
 	}
 
-	hostS := r.Host
-	for _, host := range hostS {
+	hosts := p.Host
+	for _, host := range hosts {
 		ipAddr := host.Address.Addr
 		if host.Ports.Port != nil {
 			for _, portData := range *host.Ports.Port {
