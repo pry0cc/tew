@@ -48,7 +48,7 @@ func main() {
 		datawriter := bufio.NewWriter(file)
 
 		for _, data := range results {
-			_, _ = datawriter.WriteString(data + "\n")
+			datawriter.WriteString(data + "\n")
 		}
 
 		datawriter.Flush()
@@ -165,6 +165,7 @@ func parseDnsx(filename string) map[string][]string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
