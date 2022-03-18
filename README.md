@@ -4,6 +4,8 @@
 For example:
 
 ```
+tew -x data/ex1/nmap.xml
+
 1.1.1.1:80
 1.1.1.1.1:443
 ```
@@ -40,6 +42,18 @@ cat dns.json | jq -r '.a[]' | tee ips.txt
 nmap -T4 -iL ips.txt -oX nmap.xml
 
 tew -x nmap.xml -dnsx dns.json --vhost | httpx -json -o http.json
+```
+
+## URL Generation
+If you want to passively generate URLs, you can do so with the `--urls` option.
+
+Note: This does not replace using httpx, prefer for occasions where stealth matters over accuracy. This does not check to see if the port is running a HTTP service nor does it send any requests.
+
+```
+tew -x nmap.xml -dnsx dns.json --vhost --urls 
+
+http://example.com
+https://example.com
 ```
 
 # Todo
