@@ -12,6 +12,8 @@ tew -x data/ex1/nmap.xml
 
 This is useful for internal penetration tests and can be piped to httpx easily. As it is go, it compiles into a neat and tidy binary! 
 
+![Example](screenshots/example.jpeg?raw=true "Example of Tew")
+
 # Installation
 
 ## Go install
@@ -81,7 +83,7 @@ https://example.com
 - [x] Add ability to import and use dnsx JSON & text output files - working on it!
 - [x] Clean up DNSX Parsing module and sort unique
 - [x] Add output text file as option
-- [ ] Test on Windows, Linux & Mac for cross-compatibility
+- [x] Test on Windows, Linux & Mac for cross-compatibility
 
 # Credit
 - @hakluke - Thank you man for helping me fix that dumb bug :) 
