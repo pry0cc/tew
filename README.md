@@ -65,7 +65,7 @@ https://example.com
 - [x] Add ability to import and use dnsx JSON & text output files - working on it!
 - [x] Clean up DNSX Parsing module and sort unique
 - [x] Add output text file as option
-- [ ] Test on Windows, Linux & Mac for cross-compatibility
+- [x] Test on Windows, Linux & Mac for cross-compatibility
 
 # Credit
 - @hakluke - Thank you man for helping me fix that dumb bug :) 
