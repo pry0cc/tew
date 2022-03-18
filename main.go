@@ -8,12 +8,14 @@ import (
 	"github.com/n0ncetonic/nmapxml"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
 	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
 	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (Optional)")
 	var vhostRep = flag.Bool("vhost", false, "Use dnsx data to insert vhosts (Optional)")
+	var urlArg = flag.Bool("urls", false, "Guess HTTP URLs from input (Optional)")
 	var outputArg = flag.String("o", "", "Output filename (Optional)")
 	flag.Parse()
 
@@ -21,13 +23,14 @@ func main() {
 	output := *outputArg
 	dnsx := *dnsxArg
 	vhost := *vhostRep
+	urls := *urlArg
 
 	if input == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	results := ParseNmap(input, dnsx, vhost)
+	results := ParseNmap(input, dnsx, vhost, urls)
 
 	for _, line := range results {
 		fmt.Println(line)
@@ -67,7 +70,7 @@ func Unique(slice []string) []string {
 	return uniqSlice
 }
 
-func ParseNmap(input string, dnsx string, vhost bool) []string {
+func ParseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 	/* ParseNmap parses a Nmap XML file */
 	var index map[string][]string
 	var output []string
@@ -92,21 +95,37 @@ func ParseNmap(input string, dnsx string, vhost bool) []string {
 			for _, portData := range *host.Ports.Port {
 				if portData.State.State == "open" {
 					portID := portData.PortID
+					service := portData.Service.Name
 
 					if vhost {
 						for _, ipp := range index {
 							domains := ipp
 
 							for _, dom := range domains {
-								//fmt.Println(dom + ":" + portID)
-								line := dom + ":" + portID
-								output = append(output, line)
+								line := ""
+								if urls {
+									line = GenUrl(dom, portID, service)
+								} else {
+									line = dom + ":" + portID
+								}
+
+								if line != "" {
+									output = append(output, line)
+								}
 							}
 						}
 
 					} else {
-						line := ipAddr + ":" + portID
-						output = append(output, line)
+						line := ""
+						if urls {
+							line = GenUrl(ipAddr, portID, service)
+						} else {
+							line = ipAddr + ":" + portID
+						}
+
+						if line != "" {
+							output = append(output, line)
+						}
 						//fmt.Println(ipAddr + ":" + portID)
 					}
 				}
@@ -116,6 +135,25 @@ func ParseNmap(input string, dnsx string, vhost bool) []string {
 
 	uniq := Unique(output)
 	return uniq
+}
+
+func GenUrl(host string, port string, service string) string {
+	/* GenURl generates a URL for a given sequence */
+	url := ""
+	if service == "http" || service == "https" {
+		url = service + "://" + host
+	} else if strings.Contains(service, "http") {
+		if strings.Contains(port, "80") {
+			service = "http"
+		} else if strings.Contains(port, "443") {
+			service = "https"
+		} else {
+			service = "http"
+		}
+		url = service + "://" + host + ":" + port
+	}
+
+	return url
 }
 
 func ParseDnsx(filename string) map[string][]string {
