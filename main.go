@@ -3,13 +3,20 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
-	"github.com/n0ncetonic/nmapxml"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/n0ncetonic/nmapxml"
 )
+
+type parse struct {
+	nmapxml.Run
+}
 
 func main() {
 	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
@@ -17,6 +24,7 @@ func main() {
 	var vhostRep = flag.Bool("vhost", false, "Use dnsx data to insert vhosts (Optional)")
 	var urlArg = flag.Bool("urls", false, "Guess HTTP URLs from input (Optional)")
 	var outputArg = flag.String("o", "", "Output filename (Optional)")
+
 	flag.Parse()
 
 	input := *inputArg
@@ -30,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	results := ParseNmap(input, dnsx, vhost, urls)
+	results := parse.parseNmap(parse{}, input, dnsx, vhost, urls)
 
 	for _, line := range results {
 		fmt.Println(line)
@@ -46,7 +54,7 @@ func main() {
 		datawriter := bufio.NewWriter(file)
 
 		for _, data := range results {
-			_, _ = datawriter.WriteString(data + "\n")
+			datawriter.WriteString(data + "\n")
 		}
 
 		datawriter.Flush()
@@ -55,7 +63,7 @@ func main() {
 
 }
 
-func Unique(slice []string) []string {
+func unique(slice []string) []string {
 	// create a map with all the values as key
 	uniqMap := make(map[string]struct{})
 	for _, v := range slice {
@@ -70,26 +78,33 @@ func Unique(slice []string) []string {
 	return uniqSlice
 }
 
-func ParseNmap(input string, dnsx string, vhost bool, urls bool) []string {
+func (p parse) parseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 	/* ParseNmap parses a Nmap XML file */
 	var index map[string][]string
 	var output []string
-	r, _ := nmapxml.Readfile(input)
 
-	if _, err := os.Stat(input); err != nil {
-		fmt.Printf("File does not exist\n")
+	if input != "-" {
+		if _, err := os.Stat(input); err != nil {
+			fmt.Printf("File does not exist\n")
+			os.Exit(1)
+		}
+
+		p.Run, _ = nmapxml.Readfile(input)
+	} else {
+		bytes, _ := ioutil.ReadAll(os.Stdin)
+		xml.Unmarshal(bytes, &p.Run)
 	}
 
 	if dnsx != "" {
 		if _, err := os.Stat(dnsx); err != nil {
 			fmt.Printf("dnsx file does not exist\n")
 		} else {
-			index = ParseDnsx(dnsx)
+			index = parseDnsx(dnsx)
 		}
 	}
 
-	hostS := r.Host
-	for _, host := range hostS {
+	hosts := p.Host
+	for _, host := range hosts {
 		ipAddr := host.Address.Addr
 		if host.Ports.Port != nil {
 			for _, portData := range *host.Ports.Port {
@@ -104,7 +119,7 @@ func ParseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 							for _, dom := range domains {
 								line := ""
 								if urls {
-									line = GenUrl(dom, portID, service)
+									line = generateUrl(dom, portID, service)
 								} else {
 									line = dom + ":" + portID
 								}
@@ -118,7 +133,7 @@ func ParseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 					} else {
 						line := ""
 						if urls {
-							line = GenUrl(ipAddr, portID, service)
+							line = generateUrl(ipAddr, portID, service)
 						} else {
 							line = ipAddr + ":" + portID
 						}
@@ -133,11 +148,11 @@ func ParseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 		}
 	}
 
-	uniq := Unique(output)
+	uniq := unique(output)
 	return uniq
 }
 
-func GenUrl(host string, port string, service string) string {
+func generateUrl(host string, port string, service string) string {
 	/* GenURl generates a URL for a given sequence */
 	url := ""
 	if service == "http" || service == "https" {
@@ -156,13 +171,14 @@ func GenUrl(host string, port string, service string) string {
 	return url
 }
 
-func ParseDnsx(filename string) map[string][]string {
+func parseDnsx(filename string) map[string][]string {
 	/* ParseDnsx parses a DNSX JSON file */
 	var data = map[string][]string{}
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)

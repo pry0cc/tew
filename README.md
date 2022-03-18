@@ -35,6 +35,24 @@ tew -x file.xml -o output.txt
 tew -x file.xml | httpx -json -o http.json
 ```
 
+## Stdin support
+```
+cat data/ex1/nmap.xml | go run main.go -x -
+```
+
+93.184.216.34:80
+93.184.216.34:443
+1.1.1.1:80
+8.8.8.8:53
+8.8.8.8:443
+8.8.4.4:53
+8.8.4.4:443
+1.0.0.1:53
+1.1.1.1:53
+1.1.1.1:443
+1.0.0.1:80
+1.0.0.1:443
+
 ## DNSx Parsing
 If you want to correlate DNSx JSON output, simply generate a JSON file and import it using the following syntax.
 ```
@@ -72,4 +90,5 @@ https://example.com
 - @vay3t - Go Help
 - @BruceEdiger - Go Help
 - @mortensonsam - Go help!!
+- @xstp - stdin support
 - https://www.golangprograms.com - A lot of the code here is copy-pasted from the internet, at the time of writing, my go skills are copy-paste :P And that's ok if it works, right?
