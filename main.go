@@ -20,25 +20,32 @@ type parse struct {
 
 func main() {
 	var inputArg = flag.String("x", "", "Nmap XML Input File (Required)")
+	var ipportArg = flag.String("i", "", "IP:Port Input File (Optional)")
 	var dnsxArg = flag.String("dnsx", "", "dnsx -resp output data (Optional)")
 	var vhostRep = flag.Bool("vhost", false, "Use dnsx data to insert vhosts (Optional)")
 	var urlArg = flag.Bool("urls", false, "Guess HTTP URLs from input (Optional)")
 	var outputArg = flag.String("o", "", "Output filename (Optional)")
 
 	flag.Parse()
+	var results []string
 
 	input := *inputArg
+	ipport := *ipportArg
 	output := *outputArg
 	dnsx := *dnsxArg
 	vhost := *vhostRep
 	urls := *urlArg
 
-	if input == "" {
+	if (input == "") && (ipport == "") {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	results := parse.parseNmap(parse{}, input, dnsx, vhost, urls)
+	if input != "" {
+		results = parse.parseNmap(parse{}, input, dnsx, vhost, urls)
+	} else if ipport != "" {
+		results = parseIpport(ipport, dnsx, vhost, urls)
+	}
 
 	for _, line := range results {
 		fmt.Println(line)
@@ -78,6 +85,60 @@ func unique(slice []string) []string {
 	return uniqSlice
 }
 
+func parseIpport(input string, dnsx string, vhost bool, urls bool) []string {
+	var index map[string][]string
+	var output []string
+
+	if input != "-" {
+		if _, err := os.Stat(input); err != nil {
+			fmt.Printf("File does not exist\n")
+			os.Exit(1)
+		}
+	} else {
+		// todo
+	}
+
+	if dnsx != "" {
+		if _, err := os.Stat(dnsx); err != nil {
+			fmt.Printf("dnsx file does not exist\n")
+		} else {
+			index = parseDnsx(dnsx)
+		}
+	}
+
+	file, err := os.Open(input)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		s := strings.Split(scanner.Text(), ":")
+		ip, port := s[0], s[1]
+		service := ""
+
+		if strings.Contains(port, "80") {
+			service = "http"
+		} else if strings.Contains(port, "443") {
+			service = "https"
+		}
+
+		resp := processData(ip, port, service, vhost, urls, index)
+		for _, line := range resp {
+			output = append(output, line)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	uniq := unique(output)
+	return uniq
+}
+
 func (p parse) parseNmap(input string, dnsx string, vhost bool, urls bool) []string {
 	/* ParseNmap parses a Nmap XML file */
 	var index map[string][]string
@@ -112,36 +173,10 @@ func (p parse) parseNmap(input string, dnsx string, vhost bool, urls bool) []str
 					portID := portData.PortID
 					service := portData.Service.Name
 
-					if vhost {
-						for _, ipp := range index {
-							domains := ipp
+					resp := processData(ipAddr, portID, service, vhost, urls, index)
 
-							for _, dom := range domains {
-								line := ""
-								if urls {
-									line = generateUrl(dom, portID, service)
-								} else {
-									line = dom + ":" + portID
-								}
-
-								if line != "" {
-									output = append(output, line)
-								}
-							}
-						}
-
-					} else {
-						line := ""
-						if urls {
-							line = generateUrl(ipAddr, portID, service)
-						} else {
-							line = ipAddr + ":" + portID
-						}
-
-						if line != "" {
-							output = append(output, line)
-						}
-						//fmt.Println(ipAddr + ":" + portID)
+					for _, line := range resp {
+						output = append(output, line)
 					}
 				}
 			}
@@ -152,10 +187,44 @@ func (p parse) parseNmap(input string, dnsx string, vhost bool, urls bool) []str
 	return uniq
 }
 
-func generateUrl(host string, port string, service string) string {
+func processData(ipAddr string, port string, service string, vhost bool, urls bool, index map[string][]string) []string {
+	var output []string
+	if vhost {
+		indexed := index[ipAddr]
+		for _, dom := range indexed {
+			line := ""
+			if urls {
+				line = generateURL(dom, port, service)
+			} else {
+				line = dom + ":" + port
+			}
+
+			if line != "" {
+				output = append(output, line)
+			}
+		}
+
+	} else {
+		line := ""
+		if urls {
+			line = generateURL(ipAddr, port, service)
+		} else {
+			line = ipAddr + ":" + port
+		}
+
+		if line != "" {
+			output = append(output, line)
+		}
+		//fmt.Println(ipAddr + ":" + portID)
+	}
+
+	return output
+}
+
+func generateURL(host string, port string, service string) string {
 	/* GenURl generates a URL for a given sequence */
 	url := ""
-	if service == "http" || service == "https" {
+	if (port == "80" && service == "http") || (port == "443" && service == "https") {
 		url = service + "://" + host
 	} else if strings.Contains(service, "http") {
 		if strings.Contains(port, "80") {
