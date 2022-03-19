@@ -88,14 +88,24 @@ func unique(slice []string) []string {
 func parseIpport(input string, dnsx string, vhost bool, urls bool) []string {
 	var index map[string][]string
 	var output []string
+	var scanner *bufio.Scanner
 
 	if input != "-" {
 		if _, err := os.Stat(input); err != nil {
 			fmt.Printf("File does not exist\n")
 			os.Exit(1)
+		} else {
+			file, err := os.Open(input)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer file.Close()
+
+			scanner = bufio.NewScanner(file)
 		}
 	} else {
-		// todo
+		scanner = bufio.NewScanner(os.Stdin)
 	}
 
 	if dnsx != "" {
@@ -106,14 +116,6 @@ func parseIpport(input string, dnsx string, vhost bool, urls bool) []string {
 		}
 	}
 
-	file, err := os.Open(input)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), ":")
 		ip, port := s[0], s[1]
@@ -253,7 +255,10 @@ func parseDnsx(filename string) map[string][]string {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		var result map[string]interface{}
-		json.Unmarshal([]byte(scanner.Text()), &result)
+		err = json.Unmarshal([]byte(scanner.Text()), &result)
+		if err != nil {
+			continue
+		}
 		host := result["host"].(string)
 
 		if val, ok := result["a"]; ok {
