@@ -253,7 +253,10 @@ func parseDnsx(filename string) map[string][]string {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		var result map[string]interface{}
-		json.Unmarshal([]byte(scanner.Text()), &result)
+		err = json.Unmarshal([]byte(scanner.Text()), &result)
+		if err != nil {
+			continue
+		}
 		host := result["host"].(string)
 
 		if val, ok := result["a"]; ok {
